@@ -1,0 +1,103 @@
+<template>
+  <template if:false={results.complete}>
+    <div class="section slds-m-vertical_large">
+      <base-progress-bar description={loadingDescription} progress={completionPercentage}></base-progress-bar>
+    </div>
+  </template>
+
+  <template if:true={showErrors}>
+    <div class="section slds-m-vertical_large slds-notify slds-notify_toast slds-theme_error" role="alert">
+      <div class="slds-notify__content">
+        <div class="slds-text-heading_small">
+          <strong>An error occurred while deploying. </strong> See the browser console logs for more information.
+          <template for:each={results.errors} for:item="error">
+            <p class="slds-m-vertical_large" key={error.error}>{ error.error }</p>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template if:true={showMainUser}>
+    <div class="section slds-m-vertical_large">
+      <div>
+        <strong>Note: </strong> It can take up to 5 minutes for the DNS to propogate. If the scratch org doesn't load properly, wait a few minutes to
+        launch.
+      </div>
+      <div class="slds-notify_toast slds-theme_success">
+        <div class="slds-text-heading_small">Your org is ready!</div>
+        <div>
+          <template if:true={showDelete}>
+            <base-button label="Delete" variant="destructive" onclick={deleteOrg}></base-button>
+          </template>
+          <base-button url={results.mainUser.loginUrl} target="_blank" variant="neutral" label="Launch"></base-button>
+        </div>
+      </div>
+      <div if:true={results.expirationDate}>Your org will expire on <strong>{results.expirationDate}</strong>.</div>
+    </div>
+  </template>
+
+  <template if:true={showPassword}>
+    <div class="section slds-m-vertical_large">
+      <div>
+        <strong>Note: </strong> Use the Launch button above to login for the first time
+        <p>The credentials are for other uses (mobile app, integrations).</p>
+        <p>They auth to a sandbox (test.salesforce.com) not production (login.salesforce.com)</p>
+        <p>These credentials/button will continue working after the session-based Launch button stops.</p>
+      </div>
+
+      <div class="slds-notify slds-notify_toast" role="alert">
+        <div class="slds-text-heading_small ">
+          Your username is&nbsp;
+          <strong>{results.mainUser.username}</strong>&nbsp;and your password is&nbsp;
+          <strong>{results.mainUser.password}</strong>
+        </div>
+        <div>
+          <base-button url={results.mainUser.permalink} target="_blank" variant="neutral" label="Launch via credentials"></base-button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template if:true={showHeroku}>
+    <div class="section slds-m-vertical_large">
+      <div><strong>Heroku Apps:</strong> Use these buttons to open the app (end user) or manage the app (heroku dashboard)</div>
+
+      <template for:each={results.herokuResults} for:item="herokuResult">
+        <div key={herokuResult.appName}>
+          <div class="slds-notify slds-notify_toast slds-theme_heroku" role="alert">
+            <div class="slds-text-heading_small">{herokuResult.appName}</div>
+            <div>
+              <base-button url={herokuResult.openUrl} target="_blank" variant="neutral" label="Open App"></base-button>
+              <base-button url={herokuResult.dashboardUrl} target="_blank" variant="neutral" label="Open in Heroku"></base-button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <template if:true={results.currentCommand}>
+    <div class="section slds-m-vertical_large">
+      <base-card>
+        <div>Currently running <b>{results.currentCommand}</b></div>
+      </base-card>
+    </div>
+  </template>
+
+  <div class="section slds-m-vertical_large">
+    <base-card>
+      <div class="slds-m-vertical_large">
+        Completed commands (open the browser console to see their full output)
+      </div>
+
+      <ol class="slds-list_ordered">
+        <template for:each={results.commandResults} for:item="commandResult" for:index="index">
+          <li key={commandResult.command}>
+            <messages-command-output command-result={commandResult}></messages-command-output>
+          </li>
+        </template>
+      </ol>
+    </base-card>
+  </div>
+</template>

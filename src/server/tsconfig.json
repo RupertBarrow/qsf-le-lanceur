@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "outDir": "../../lib/server",
+        "target": "es2018",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "declaration": true,
+        // "strict": true,
+        "noUnusedLocals": true,
+        "module": "commonjs",
+        "resolveJsonModule": true,
+
+        "removeComments": true,
+        "types": ["node", "jest", "express", "ioredis", "fs-extra", "moment", "axios", "request-promise-native", "universal-analytics"]
+    },
+    // "compileOnSave": true,
+    // "include": ["./src/server/**"],
+    "exclude": ["**/__tests__"]
+}
