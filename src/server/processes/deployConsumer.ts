@@ -8,6 +8,7 @@ const setTimeoutPromise = util.promisify(setTimeout);
 
 (async () => {
     logger.debug('DeployConsumer: I am a always-on deploy (non-pool) consumer and I am up!');
+    console.log('### deployConsumer : calling auth');
 
     await auth();
     let processedSomething = true;

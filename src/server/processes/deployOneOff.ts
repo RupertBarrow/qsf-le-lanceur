@@ -5,6 +5,8 @@ import { auth } from '../lib/hubAuth';
 import { getDeployRequestSize } from '../lib/redisNormal';
 
 (async () => {
+    console.log('### deployOneOff : calling auth');
+
     logger.debug('A one-off deploy consumer dyno is up!');
     await auth();
 
