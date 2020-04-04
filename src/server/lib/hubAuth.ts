@@ -52,7 +52,7 @@ const auth = async (): Promise<string> => {
         }
 
         let r = await exec(`${await buildJWTAuthCommand()} --setdefaultdevhubusername -a hub --json`);
-        console.log('### auth res = ', r.stdout.result);
+        console.log('### auth res = ', r);
     } catch (err) {
         logger.error('hubAuth', err);
         // eslint-disable-next-line no-process-exit
