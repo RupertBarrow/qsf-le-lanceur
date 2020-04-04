@@ -51,7 +51,8 @@ const auth = async (): Promise<string> => {
             await exec('heroku update');
         }
 
-        await exec(`${await buildJWTAuthCommand()} --setdefaultdevhubusername -a hub --json`);
+        let r = await exec(`${await buildJWTAuthCommand()} --setdefaultdevhubusername -a hub --json`);
+        console.log('### auth res = ', r);
     } catch (err) {
         logger.error('hubAuth', err);
         // eslint-disable-next-line no-process-exit
