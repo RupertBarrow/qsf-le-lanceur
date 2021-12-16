@@ -31,7 +31,7 @@ app.use(express.static('dist'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-    origin: 'https://qsf0-le-lanceur.herokuapp.com'
+    origin: 'https://enterprise-platform-112-dev-ed.lightning.force.com'
 }));
 
 
