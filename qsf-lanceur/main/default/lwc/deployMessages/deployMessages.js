@@ -79,20 +79,19 @@ export default class DeployMessages extends LightningElement {
     fetch(`${SERVER}${url}`, {
       method: 'POST',                                 // *GET, POST, PUT, DELETE, etc.
       mode: 'cors',                                   // no-cors, *cors, same-origin
-      cache: 'no-cache',                              // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: 'same-origin',                     // include, *same-origin, omit
       headers: {
         //'Content-Type': 'application/json'
         'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: 'follow',                             // manual, *follow, error
-      referrerPolicy: 'no-referrer'                   // no-referrer, *client
+      }
     })
     .then(result => result.json())
     .then(result => {
       console.log('REQUEST : res = ', result)
 
       return result
+    })
+    .catch((err) => {
+      console.error(err)
     })
   }
 
@@ -111,27 +110,26 @@ export default class DeployMessages extends LightningElement {
       fetch(`${SERVER}/results/${config.deployId}`, {
         method: 'GET',                                  // *GET, POST, PUT, DELETE, etc.
         mode: 'cors',                                   // no-cors, *cors, same-origin
-        cache: 'no-cache',                              // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin',                     // include, *same-origin, omit
         headers: {
           //'Content-Type': 'application/json'
           'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'follow',                             // manual, *follow, error
-        referrerPolicy: 'no-referrer'                   // no-referrer, *client
+        }
       })
-        .then(result => result.json())
-        .then(result => {
-          if (config?.log) {
-            console.log('RESPONSE : res = ', result)
-          }
+      .then(result => result.json())
+      .then(result => {
+        if (config?.log) {
+          console.log('RESPONSE : res = ', result)
+        }
 
-          this.results = result || {}
+        this.results = result || {}
 
-          if (result?.complete) {
-            //clearInterval(pinger)
-          }
-        })
+        if (result?.complete) {
+          //clearInterval(pinger)
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+      })
     }
   }
 
@@ -143,23 +141,21 @@ export default class DeployMessages extends LightningElement {
     fetch('${SERVER}/delete',{
       method: 'POST',                                 // *GET, POST, PUT, DELETE, etc.
       mode: 'cors',                                   // no-cors, *cors, same-origin
-      cache: 'no-cache',                              // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: 'same-origin',                     // include, *same-origin, omit
-
       body: JSON.stringify({
         deployId: this.results.deployId,
       }),
       headers: {
         'Content-Type': 'application/json'
         //'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: 'follow',                             // manual, *follow, error
-      referrerPolicy: 'no-referrer'                   // no-referrer, *client
+      }
     })
     .then(result => result.json())
     .then(response => {
       console.log(response)
       window.location = response.redirectTo
+    })
+    .catch((err) => {
+      console.error(err)
     })
   }
 
