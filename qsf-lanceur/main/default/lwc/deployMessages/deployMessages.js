@@ -92,7 +92,7 @@ export default class DeployMessages extends LightningElement {
       return result
     })
     .catch(err => {
-      console.error(err)
+      console.log('### doCalloutRequest : ERROR = ', err)
     })
   }
 
@@ -120,9 +120,7 @@ export default class DeployMessages extends LightningElement {
       })
       .then(result => result.json())
       .then(result => {
-        if (config?.log) {
-          console.log('RESPONSE : res = ', result)
-        }
+        console.log('### doCalloutResponse : res = ', result)
 
         this.results = result || {}
 
@@ -131,7 +129,7 @@ export default class DeployMessages extends LightningElement {
         }
       })
       .catch(err => {
-        console.error(err)
+        console.log('### doCalloutResponse : ERROR = ', err)
       })
     }
   }
