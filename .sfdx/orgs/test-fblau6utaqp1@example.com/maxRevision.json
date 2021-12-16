@@ -1,5 +1,5 @@
 {
-  "serverMaxRevisionCounter": 67,
+  "serverMaxRevisionCounter": 73,
   "sourceMembers": {
     "LightningComponentBundle__main": {
       "serverRevisionCounter": 27,
@@ -32,8 +32,8 @@
       "isNameObsolete": false
     },
     "LightningComponentBundle__deployMessages": {
-      "serverRevisionCounter": 62,
-      "lastRetrievedFromServer": 62,
+      "serverRevisionCounter": 68,
+      "lastRetrievedFromServer": 68,
       "memberType": "LightningComponentBundle",
       "isNameObsolete": false
     },
@@ -68,32 +68,32 @@
       "isNameObsolete": false
     },
     "LightningComponentResource__deployMessages/deployMessages.js": {
-      "serverRevisionCounter": 67,
-      "lastRetrievedFromServer": 67,
+      "serverRevisionCounter": 73,
+      "lastRetrievedFromServer": 73,
       "memberType": "LightningComponentResource",
       "isNameObsolete": false
     },
     "LightningComponentResource__deployMessages/local.css": {
-      "serverRevisionCounter": 63,
-      "lastRetrievedFromServer": 63,
+      "serverRevisionCounter": 69,
+      "lastRetrievedFromServer": 69,
       "memberType": "LightningComponentResource",
       "isNameObsolete": false
     },
     "LightningComponentResource__deployMessages/deployMessages.html": {
-      "serverRevisionCounter": 64,
-      "lastRetrievedFromServer": 64,
+      "serverRevisionCounter": 70,
+      "lastRetrievedFromServer": 70,
       "memberType": "LightningComponentResource",
       "isNameObsolete": false
     },
     "LightningComponentResource__deployMessages/deployMessage.js-meta.xml": {
-      "serverRevisionCounter": 65,
-      "lastRetrievedFromServer": 65,
+      "serverRevisionCounter": 71,
+      "lastRetrievedFromServer": 71,
       "memberType": "LightningComponentResource",
       "isNameObsolete": false
     },
     "LightningComponentResource__deployMessages/deployMessages.css": {
-      "serverRevisionCounter": 66,
-      "lastRetrievedFromServer": 66,
+      "serverRevisionCounter": 72,
+      "lastRetrievedFromServer": 72,
       "memberType": "LightningComponentResource",
       "isNameObsolete": false
     },

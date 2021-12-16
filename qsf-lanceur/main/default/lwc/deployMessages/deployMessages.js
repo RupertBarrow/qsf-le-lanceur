@@ -69,11 +69,8 @@ export default class DeployMessages extends LightningElement {
   }
 
   doStuff(config) {
-    let error
-    let data
-
     this.doCalloutRequest('/launch?template=https://github.com/mshanemc/df17appbuilding')
-    .then(result => {
+    .then(() => {
       this.doCalloutResponse(config)
     })
   }
@@ -91,7 +88,6 @@ export default class DeployMessages extends LightningElement {
 
   async doCalloutResponse(newConfig) {
     let config = {}   // FIXME : where does this come from ?
-    let res = {}
 
     config = newConfig;
     if (newConfig?.log) {
