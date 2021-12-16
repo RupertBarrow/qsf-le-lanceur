@@ -86,7 +86,7 @@ export default class DeployMessages extends LightningElement {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       redirect: 'follow',                             // manual, *follow, error
-      referrerPolicy: 'no-referrer',                  // no-referrer, *client
+      referrerPolicy: 'no-referrer'                   // no-referrer, *client
     })
     .then(result => result.json())
     .then(result => {
@@ -118,8 +118,7 @@ export default class DeployMessages extends LightningElement {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         redirect: 'follow',                             // manual, *follow, error
-        referrerPolicy: 'no-referrer',                  // no-referrer, *client
-  
+        referrerPolicy: 'no-referrer'                   // no-referrer, *client
       })
         .then(result => result.json())
         .then(result => {
@@ -155,7 +154,7 @@ export default class DeployMessages extends LightningElement {
         //'Content-Type': 'application/x-www-form-urlencoded',
       },
       redirect: 'follow',                             // manual, *follow, error
-      referrerPolicy: 'no-referrer',                  // no-referrer, *client
+      referrerPolicy: 'no-referrer'                   // no-referrer, *client
     })
     .then(result => result.json())
     .then(response => {
