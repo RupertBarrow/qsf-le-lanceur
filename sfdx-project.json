@@ -1,0 +1,16 @@
+{
+  "namespace": "QSF",
+  "sourceApiVersion": "53.0",
+
+  "packageDirectories": [
+    {
+      "path": "qsf-lanceur",
+      "default": true,
+      "package": "qsf-lanceur",
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT"
+    }
+  ],
+  "packageAliases": {
+  }
+}
