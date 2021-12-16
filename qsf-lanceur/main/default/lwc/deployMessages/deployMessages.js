@@ -5,7 +5,7 @@ const timeoutMS = 1000 * 60 * 30; // 30 minutes, then stop no matter what
 const SERVER = 'https://qsf0-le-lanceur.herokuapp.com'
 
 export default class DeployMessages extends LightningElement {
-  @track results    // CDS
+  @track results = {}    // CDS
   _deployId;
 
   @api
@@ -104,7 +104,7 @@ export default class DeployMessages extends LightningElement {
             console.log('RESPONSE : res = ', result)
           }
 
-          this.results = result
+          this.results = result || {}
 
           if (result?.complete) {
             //clearInterval(pinger)
