@@ -51,6 +51,7 @@ dump.rdb
 built
 dist
 /lib
+.sfdx
 
 # specialized tests
 test/integrationTests/generatedRepos

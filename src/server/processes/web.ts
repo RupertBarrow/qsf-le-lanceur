@@ -30,9 +30,9 @@ app.listen(port, () => {
 app.use(express.static('dist'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors(
+app.use(cors({
     origin: 'https://qsf0-le-lanceur.herokuapp.com'
-));
+}));
 
 
 function wrapAsync(fn: any) {
