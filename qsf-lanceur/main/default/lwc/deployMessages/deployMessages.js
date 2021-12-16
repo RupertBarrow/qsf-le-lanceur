@@ -76,8 +76,9 @@ export default class DeployMessages extends LightningElement {
   }
 
   async doCalloutRequest(url) {
+    console.log('### doCalloutRequest ...')
     fetch(`${SERVER}${url}`, {
-      method: 'POST',                                 // *GET, POST, PUT, DELETE, etc.
+      method: 'GET',                                 // *GET, POST, PUT, DELETE, etc.
       mode: 'cors',                                   // no-cors, *cors, same-origin
       headers: {
         //'Content-Type': 'application/json'
@@ -86,17 +87,19 @@ export default class DeployMessages extends LightningElement {
     })
     .then(result => result.json())
     .then(result => {
-      console.log('REQUEST : res = ', result)
+      console.log('### doCalloutRequest - REQUEST : res = ', result)
 
       return result
     })
-    .catch((err) => {
+    .catch(err => {
       console.error(err)
     })
   }
 
 
   async doCalloutResponse(newConfig) {
+    console.log('### doCalloutResponse ...')
+
     let config = {}   // FIXME : where does this come from ?
 
     config = newConfig;
@@ -127,7 +130,7 @@ export default class DeployMessages extends LightningElement {
           //clearInterval(pinger)
         }
       })
-      .catch((err) => {
+      .catch(err => {
         console.error(err)
       })
     }
@@ -138,7 +141,7 @@ export default class DeployMessages extends LightningElement {
     e.preventDefault()
     e.stopPropagation()
 
-    fetch('${SERVER}/delete',{
+    fetch('${SERVER}/delete', {
       method: 'POST',                                 // *GET, POST, PUT, DELETE, etc.
       mode: 'cors',                                   // no-cors, *cors, same-origin
       body: JSON.stringify({
@@ -154,7 +157,7 @@ export default class DeployMessages extends LightningElement {
       console.log(response)
       window.location = response.redirectTo
     })
-    .catch((err) => {
+    .catch(err => {
       console.error(err)
     })
   }

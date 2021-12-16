@@ -93,9 +93,15 @@ app.get(
         if (req.query.email === 'required') {
             return res.redirect(multiTemplateURLBuilder(req.query.template, '/#userinfo'));
         }
+        console.log('### /launch : OK 1')
 
         const message = await commonDeploy(req, '/launch');
-        return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
+        console.log('### /launch : OK 2')
+
+        let resultat = res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
+        console.log('### /launch : OK 3')
+
+        return resultat
     })
 );
 
