@@ -1,5 +1,5 @@
 // the purpose of this file is to wrap any interaction with Redis.
-//  This lets us keep key names in a single place, and handle any validate / stringify / parse operations.
+// This lets us keep key names in a single place, and handle any validate / stringify / parse operations.
 // Users of this file just get/put/delete things as if redis is fancier than it really is
 
 import Redis from 'ioredis';
@@ -19,8 +19,7 @@ const deployRequestExchange = 'deploys';
 export const poolDeployExchange = 'poolDeploys';
 const orgDeleteExchange = 'orgDeletes';
 const herokuCDSExchange = 'herokuCDSs';
-const leadQueue = 'leads';
-const failedLeadQueue = 'failedLeads';
+const leadQueue = processWrapper.LEAD_QUEUE || 'leads';
 
 const days31asSeconds = 31 * 24 * 60 * 60;
 
@@ -29,12 +28,14 @@ const redis = new Redis(processWrapper.REDIS_URL);
 
 const deleteOrg = async (username: string): Promise<void> => {
     logger.debug(`org delete requested for ${username}`);
-    const msg: DeleteRequest = {
-        username: filterUnsanitized(username),
-        delete: true,
-        created: new Date()
-    };
-    await redis.rpush(orgDeleteExchange, JSON.stringify(msg));
+    if (username) {
+        const msg: DeleteRequest = {
+            username: filterUnsanitized(username),
+            delete: true,
+            created: new Date()
+        };
+        await redis.rpush(orgDeleteExchange, JSON.stringify(msg));
+    }
 };
 
 const putHerokuCDS = async (cds: CDS): Promise<void> => {
@@ -44,11 +45,16 @@ const putHerokuCDS = async (cds: CDS): Promise<void> => {
 };
 
 const getHerokuCDSs = async (): Promise<CDS[]> => {
-    const CDSs: CDS[] = (await redis.lrange(herokuCDSExchange, 0, -1)).map(queueItem => JSON.parse(queueItem));
+    const CDSs: CDS[] = (await redis.lrange(herokuCDSExchange, 0, -1)).map((queueItem) =>
+        JSON.parse(queueItem)
+    );
     return CDSs;
 };
 
-const getAppNamesFromHerokuCDSs = async (salesforceUsername: string, expecting = true) => {
+const getAppNamesFromHerokuCDSs = async (
+    salesforceUsername: string,
+    expecting = true
+): Promise<string[]> => {
     // get all the CDSs
     const herokuCDSs = await getHerokuCDSs();
 
@@ -56,7 +62,9 @@ const getAppNamesFromHerokuCDSs = async (salesforceUsername: string, expecting =
         return [];
     }
     // find the matching username
-    const matchedCDSIndex = herokuCDSs.findIndex(cds => cds.mainUser.username === salesforceUsername);
+    const matchedCDSIndex = herokuCDSs.findIndex(
+        (cds) => cds.mainUser.username === salesforceUsername
+    );
 
     if (matchedCDSIndex < 0) {
         if (expecting) {
@@ -67,23 +75,25 @@ const getAppNamesFromHerokuCDSs = async (salesforceUsername: string, expecting =
         return [];
     }
 
-    logger.debug(`found matching cds ${salesforceUsername} === ${herokuCDSs[matchedCDSIndex].mainUser.username}`);
+    logger.debug(
+        `found matching cds ${salesforceUsername} === ${herokuCDSs[matchedCDSIndex].mainUser.username}`
+    );
 
     const matched = herokuCDSs.splice(matchedCDSIndex, 1);
 
     await redis.del(herokuCDSExchange);
     if (herokuCDSs.length > 0) {
         // clear the queue and push the unmatched stuff back
-        await redis.lpush(herokuCDSExchange, ...herokuCDSs.map(cds => JSON.stringify(cds)));
+        await redis.lpush(herokuCDSExchange, ...herokuCDSs.map((cds) => JSON.stringify(cds)));
     }
 
     // return array of appnames
-    return matched[0].herokuResults.map(result => result.appName);
+    return matched[0].herokuResults.map((result) => result.appName);
 };
 
 const getDeleteQueueSize = async () => redis.llen(orgDeleteExchange);
 
-const getDeleteRequest = async () => {
+const getDeleteRequest = async (): Promise<DeleteRequest> => {
     const msg = await redis.lpop(orgDeleteExchange);
     if (msg) {
         const msgJSON = JSON.parse(msg) as DeleteRequest;
@@ -144,7 +154,9 @@ const cdsDelete = async (deployId: string) => {
     const retrieved = await redis.get(deployId);
     if (retrieved) {
         const cds = JSON.parse(retrieved) as CDS;
-        await deleteOrg(cds.mainUser.username);
+        if (cds.mainUser.username) {
+            await deleteOrg(cds.mainUser.username);
+        }
     }
     await redis.del(deployId);
 };
@@ -169,7 +181,8 @@ const cdsRetrieve = async (deployId: string) => {
             errors: [
                 {
                     command: 'retrieval',
-                    error: 'Results not found for your deployId. It may have been deleted or may have expired',
+                    error:
+                        'Results not found for your deployId. It may have been deleted or may have expired',
                     raw: ''
                 }
             ]
@@ -179,7 +192,7 @@ const cdsRetrieve = async (deployId: string) => {
 
 const getKeysForCDSs = async () => {
     const deployIds = await redis.keys('*-*-*');
-    return deployIds.filter(id => !id.includes('.'));
+    return deployIds.filter((id) => !id.includes('.'));
 };
 
 // not all keys...supposed to be getting pooled orgs
@@ -216,6 +229,12 @@ const putPooledOrg = async (depReq: DeployRequest, poolMessage: CDS): Promise<vo
     await redis.rpush(key, JSON.stringify(poolMessage));
 };
 
+const getAllPooledOrgs = async (poolname: string): Promise<CDS[]> =>
+    (await redis.lrange(poolname, 0, -1)).map((msg) => JSON.parse(msg));
+
+const getAllPooledOrgIDs = async (poolname: string): Promise<string[]> =>
+    (await getAllPooledOrgs(poolname)).map((cds) => cds.orgId);
+
 const getPoolDeployRequestQueueSize = async () => redis.llen(poolDeployExchange);
 
 /**
@@ -223,27 +242,16 @@ const getPoolDeployRequestQueueSize = async () => redis.llen(poolDeployExchange)
  */
 const getPoolDeployCountByRepo = async (pool: PoolConfig) => {
     const poolRequests = await redis.lrange(poolDeployExchange, 0, -1);
-    return poolRequests.map(pr => JSON.parse(pr)).filter((pr: DeployRequest) => equal(pr.repos, pool.repos)).length;
+    return poolRequests
+        .map((pr) => JSON.parse(pr))
+        .filter((pr: DeployRequest) => equal(pr.repos, pool.repos)).length;
 };
 
-const putLead = async lead => {
-    if (processWrapper.sfdcLeadCaptureServlet) {
+const putLead = async (lead) => {
+    if (processWrapper.LEAD_QUEUE) {
         await redis.rpush(leadQueue, JSON.stringify(lead));
     }
 };
-
-const putFailedLead = async lead => {
-    if (processWrapper.sfdcLeadCaptureServlet) {
-        await redis.rpush(failedLeadQueue, JSON.stringify(lead));
-    }
-};
-
-const getLead = async () => {
-    const lead = await redis.lpop(leadQueue);
-    return JSON.parse(lead);
-};
-
-const getLeadQueueSize = async () => redis.llen(leadQueue);
 
 export {
     redis,
@@ -271,7 +279,6 @@ export {
     getAppNamesFromHerokuCDSs,
     getHerokuCDSs,
     putLead,
-    getLead,
-    getLeadQueueSize,
-    putFailedLead
+    getAllPooledOrgs,
+    getAllPooledOrgIDs
 };

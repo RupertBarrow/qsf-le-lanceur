@@ -5,7 +5,9 @@ import ua from 'universal-analytics';
 import path from 'path';
 import jsforce from 'jsforce';
 
-import { putDeployRequest, getKeys, cdsDelete, cdsRetrieve, cdsPublish, putLead } from '../lib/redisNormal';
+import cors from 'cors';
+
+import { putDeployRequest, getKeys, cdsDelete, cdsRetrieve, cdsPublish, putLead, getAllPooledOrgIDs } from '../lib/redisNormal';
 import { deployMsgBuilder } from '../lib/deployMsgBuilder';
 import { utilities } from '../lib/utilities';
 import { getPoolKey } from '../lib/namedUtilities';
@@ -28,9 +30,10 @@ app.listen(port, () => {
 app.use(express.static('dist'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors());
 
 function wrapAsync(fn: any) {
-    return function(req, res, next) {
+    return function (req, res, next) {
         // Make sure to `.catch()` any errors and pass them along to the `next()`
         // middleware in the chain, in this case the error handler.
         fn(req, res, next).catch(next);
@@ -38,9 +41,9 @@ function wrapAsync(fn: any) {
 }
 
 const commonDeploy = async (req, url: string) => {
-    const message: DeployRequest = deployMsgBuilder(req);
+    const message: DeployRequest = await deployMsgBuilder(req);
 
-    if (message.visitor) {
+    if (message.visitor && !message.noPool) {
         message.visitor.pageview(url).send();
         message.visitor.event('Repo', getPoolKey(message, '-')).send();
     }
@@ -63,7 +66,7 @@ app.post(
     wrapAsync(async (req, res, next) => {
         const [message] = await Promise.all([commonDeploy(req, '/trial'), putLead(req.body)]);
         logger.debug('trial request', message);
-        res.redirect(`/deploying/trial/${message.deployId.trim()}`);
+        res.redirect(`/#deploying/trial/${message.deployId.trim()}`);
     })
 );
 
@@ -71,7 +74,7 @@ app.post(
     '/delete',
     wrapAsync(async (req, res, next) => {
         await cdsDelete(req.body.deployId);
-        res.send({ redirectTo: '/deleteConfirm' });
+        res.send({ redirectTo: '/#deleteConfirm' });
     })
 );
 
@@ -80,11 +83,11 @@ app.get(
     wrapAsync(async (req, res, next) => {
         // allow repos to require the email parameter
         if (req.query.email === 'required') {
-            return res.redirect(multiTemplateURLBuilder(req.query.template, '/userinfo'));
+            return res.redirect(multiTemplateURLBuilder(req.query.template, '/#userinfo'));
         }
 
         const message = await commonDeploy(req, '/launch');
-        return res.redirect(`/deploying/deployer/${message.deployId.trim()}`);
+        return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
     })
 );
 
@@ -111,6 +114,14 @@ app.get(
 );
 
 app.get(
+    '/pools/:poolname',
+    wrapAsync(async (req, res, next) => {
+        const orgIDs = await getAllPooledOrgIDs(req.params.poolname);
+        res.send(orgIDs);
+    })
+);
+
+app.get(
     '/results/:deployId',
     wrapAsync(async (req, res, next) => {
         const results = await cdsRetrieve(req.params.deployId);
@@ -118,7 +129,7 @@ app.get(
     })
 );
 
-app.get('/favicons/favicon.ico', (req, res, next) => {
+app.get(['/favicons/favicon.ico', '/favicon.ico'], (req, res, next) => {
     res.sendFile('favicon.ico', { root: path.join(__dirname, '../../../dist/resources/favicons') });
 });
 
@@ -174,7 +185,7 @@ app.get(
             },
             'byoo'
         );
-        return res.redirect(`/deploying/deployer/${message.deployId.trim()}`);
+        return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
     })
 );
 
@@ -192,7 +203,7 @@ app.use((error, req, res, next) => {
     }
     logger.error(`request failed: ${req.url}`);
     logger.error(error);
-    return res.redirect(`/error?msg=${error}`);
+    return res.redirect(`/#error?msg=${error}`);
 });
 
 // process.on('unhandledRejection', e => {

@@ -8,36 +8,34 @@ import {
     orgDeleteExchange,
     getHerokuCDSs,
     getAppNamesFromHerokuCDSs,
-    getKeysForCDSs,
+    // getKeysForCDSs,
     cdsRetrieve,
     cdsDelete,
-    getDeleteRequest
+    getDeleteRequest,
+    getAllPooledOrgs
 } from './redisNormal';
 import { PoolConfig } from './types';
+import { CDS } from './CDS';
 import { herokuDelete } from './herokuDelete';
 import { exec2JSON } from './execProm';
 import { getPoolName, getPoolConfig } from './namedUtilities';
-import { CDS } from './CDS';
 import { processWrapper } from './processWrapper';
 
 const hoursToKeepBYOO = 12;
 
 const checkExpiration = async (pool: PoolConfig): Promise<string> => {
     const poolname = getPoolName(pool);
-    const currentPoolSize = await redis.llen(poolname); // how many orgs are there?
-
-    if (currentPoolSize === 0) {
+    const allOrgs = await getAllPooledOrgs(poolname);
+    if (allOrgs.length === 0) {
         return `pool ${poolname} is empty`;
     }
-
-    const allMessages = await redis.lrange(poolname, 0, -1); // we'll take them all
-    const allOrgs: CDS[] = allMessages.map(msg => JSON.parse(msg));
-
     const goodOrgs = allOrgs
-        .filter(org => moment().diff(moment(org.completeTimestamp), 'hours', true) <= pool.lifeHours)
-        .map(org => JSON.stringify(org));
+        .filter(
+            (org) => moment().diff(moment(org.completeTimestamp), 'hours', true) <= pool.lifeHours
+        )
+        .map((org) => JSON.stringify(org));
 
-    if (goodOrgs.length === allMessages.length) {
+    if (goodOrgs.length === allOrgs.length) {
         return `all the orgs in pool ${poolname} are fine`;
     }
 
@@ -50,8 +48,13 @@ const checkExpiration = async (pool: PoolConfig): Promise<string> => {
     }
 
     const expiredOrgs = allOrgs
-        .filter(org => moment().diff(moment(org.completeTimestamp), 'hours', true) > pool.lifeHours && org.mainUser && org.mainUser.username)
-        .map(org => JSON.stringify({ username: org.mainUser.username, delete: true }));
+        .filter(
+            (org) =>
+                moment().diff(moment(org.completeTimestamp), 'hours', true) > pool.lifeHours &&
+                org.mainUser &&
+                org.mainUser.username
+        )
+        .map((org) => JSON.stringify({ username: org.mainUser.username, delete: true }));
 
     if (expiredOrgs.length > 0) {
         await redis.rpush(orgDeleteExchange, ...expiredOrgs);
@@ -61,14 +64,8 @@ const checkExpiration = async (pool: PoolConfig): Promise<string> => {
 
 const skimmer = async (): Promise<void> => {
     const pools = await getPoolConfig();
-    const promises: Promise<string>[] = [];
-
-    pools.forEach(pool => {
-        promises.push(checkExpiration(pool));
-    });
-
-    const results = await Promise.all(promises);
-    results.forEach(result => logger.debug(result));
+    const results = await Promise.all(pools.map((pool) => checkExpiration(pool)));
+    results.forEach((result) => logger.debug(result));
 };
 
 const doesOrgExist = async (username: string): Promise<boolean> => {
@@ -76,13 +73,7 @@ const doesOrgExist = async (username: string): Promise<boolean> => {
         const queryResult = await exec2JSON(
             `sfdx force:data:soql:query -u ${processWrapper.HUB_USERNAME} -q "select status from ScratchOrgInfo where SignupUsername='${username}'" --json`
         );
-        const status = queryResult.result.records[0].Status;
-
-        if (status === 'Deleted' || status === 'Error') {
-            return false;
-        } else {
-            return true;
-        }
+        return !['Deleted', 'Error'].includes(queryResult.result.records[0].Status);
     } catch (e) {
         logger.error(`error checking hub for username ${username}`);
         logger.error(e);
@@ -116,21 +107,49 @@ const herokuExpirationCheck = async (): Promise<void> => {
     }
 };
 
-const removeOldDeployIds = async (): Promise<void> => {
-    const deployIds = await getKeysForCDSs();
-    const CDSs = await Promise.all(deployIds.map(deployId => cdsRetrieve(deployId)));
-    await Promise.all(
-        CDSs.map(cds => {
-            if (!cds.expirationDate && moment().diff(moment(cds.browserStartTime), 'hours') > hoursToKeepBYOO) {
-                return cdsDelete(cds.deployId);
-            }
-            if (cds.expirationDate && moment().isAfter(moment(cds.expirationDate).endOf('day'))) {
-                return cdsDelete(cds.deployId);
-            }
-            return undefined;
-        }).filter(item => item)
-    );
-};
+const removeOldDeployIds = async (): Promise<void> =>
+    new Promise((resolve) => {
+        // const deployIds = await getKeysForCDSs();
+        const stream = redis.scanStream({
+            match: '*-*-*'
+        });
+        stream.on('end', () => {
+            logger.debug('end of redis-stream');
+            resolve();
+        });
+        stream.on('data', async (keyResults: string[]) => {
+            // logger.debug(`data with length ${keyResults.length}`, keyResults);
+            // Pause the stream from scanning more keys until we've migrated the current keys.
+            stream.pause();
+            const CDSs = ((await Promise.all(
+                keyResults
+                    .filter((id) => !id.includes('.'))
+                    .map((deployId) => cdsRetrieve(deployId))
+            )) as CDS[]).filter((cds) => cds.mainUser && cds.mainUser.username);
+            logger.debug(`CDSs with length ${CDSs.length}`);
+            await Promise.all(
+                CDSs.map((cds) => {
+                    logger.debug(`has expiration ${cds.expirationDate}`);
+                    if (
+                        !cds.expirationDate &&
+                        moment().diff(moment(cds.browserStartTime), 'hours') > hoursToKeepBYOO
+                    ) {
+                        return cdsDelete(cds.deployId);
+                        // logger.debug('would delete');
+                    }
+                    if (
+                        cds.expirationDate &&
+                        moment().isAfter(moment(cds.expirationDate).endOf('day'))
+                    ) {
+                        return cdsDelete(cds.deployId);
+                        // logger.debug('would delete');
+                    }
+                    return undefined;
+                }).filter((item) => item)
+            );
+            stream.resume();
+        });
+    });
 
 const processDeleteQueue = async (): Promise<void> => {
     const delQueueInitialSize = await getDeleteQueueSize();
@@ -147,7 +166,7 @@ const processDeleteQueue = async (): Promise<void> => {
 
                 await exec2JSON(
                     `sfdx force:data:record:delete -u ${processWrapper.HUB_USERNAME} -s ActiveScratchOrg -w "SignupUsername='${deleteReq.username}'" --json`
-                ).catch(e => {
+                ).catch((e) => {
                     logger.error(e);
                     logger.warn(`unable to delete org with username: ${deleteReq.username}`);
                 });

@@ -20,8 +20,9 @@ import {
 
 import { DeployRequest, PoolConfig } from '../../lib/types';
 import { CDS } from '../../lib/CDS';
+import { processDeleteQueue } from '../../lib/skimmerSupport';
 
-jest.setTimeout(7000);
+jest.setTimeout(20000);
 const deployMsgTest: DeployRequest = {
     repos: [
         {
@@ -68,7 +69,7 @@ test('tests HerokuCDS functions', async () => {
     const outputCDSs = await getHerokuCDSs();
     expect(outputCDSs.length).toBe(2);
 
-    outputCDSs.forEach(cds => {
+    outputCDSs.forEach((cds) => {
         expect(cds.herokuResults).toBeTruthy();
     });
 
@@ -92,13 +93,18 @@ test('can get a message from the deploy queue', async () => {
 });
 
 test('blocks deletes with bad usernames', async () => {
-    await expect(deleteOrg('hack@you.bad;wget')).rejects.toEqual(Error(`invalid characters in 'hack@you.bad;wget'`));
+    await expect(deleteOrg('hack@you.bad;wget')).rejects.toEqual(
+        Error(`invalid characters in 'hack@you.bad;wget'`)
+    );
 });
 
 test('allows deletes with good usernames', async () => {
     await expect(deleteOrg('sweet@you.good')).resolves.toBeUndefined();
     const result = await deleteOrg('sweet@you.good');
     expect(result).toBeUndefined();
+
+    // clean up after yourself
+    await processDeleteQueue();
 });
 
 test('properly counts poolDeploys', async () => {

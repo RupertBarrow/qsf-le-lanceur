@@ -7,6 +7,8 @@
         "build": "yarn build:client && yarn build:server",
         "build:server": "tsc -b ./src/server",
         "build:client": "lwc-services build -m production",
+        "heroku:dev:down": "heroku ps:scale web=0 orgbuilder=0 pooldrain=0 -a hosted-scratch-dev",
+        "heroku:dev:up": "heroku ps:scale web=1 orgbuilder=2 -a hosted-scratch-dev",
         "local": "npm run build && heroku local dynoskimmer=1 && heroku local poolskimmer=1 && heroku local oneoffbuilder=1 && heroku local poolwatcher=1 && heroku local pooldeployer=1 && heroku local orgdeleter=1 && heroku local web=1,orgbuilder=5",
         "local:web": "yarn build && heroku local web=1,orgbuilder=1",
         "local:clean": "heroku local orgdeleter=1",
@@ -22,7 +24,7 @@
         "test": "test:generate && jest test/integrationTests -c jest.config.integration.js",
         "watch": "run-p watch:client watch:server",
         "watch:client": "lwc-services watch",
-        "watch:server": "nodemon"
+        "watch:server": "redis-server --daemonize yes; nodemon"
     },
     "repository": {
         "type": "git",
@@ -36,11 +38,12 @@
     "homepage": "https://github.com/mshanemc/deploy-to-sfdx#readme",
     "dependencies": {
         "@lifeomic/attempt": "^3.0.0",
-        "@mshanemc/sfdx-migration-automatic": "^0.2.1",
+        "@mshanemc/lwc-oss-base": "^1.1.1",
+        "@mshanemc/sfdx-migration-automatic": "^0.3.1",
         "@salesforce-ux/design-system": "^2.9.3",
         "@salesforce/analytics": "0.17.0",
         "@salesforce/kit": "^1.1.1",
-        "axios": "^0.19.0",
+        "cors": "^2.8.5",
         "deepmerge": "^4.2.2",
         "express": "^4.16.4",
         "fast-deep-equal": "^3.1.1",
@@ -52,66 +55,65 @@
         "lodash.isequal": "^4.5.0",
         "moment": "^2.24.0",
         "request-promise-native": "^1.0.7",
-        "shane-sfdx-plugins": "^4.21.0",
+        "salesforce-jwt-bearer-token-flow": "^0.2.4",
+        "sfdmu": "^3.7.19",
+        "shane-sfdx-plugins": "^4.43.0",
         "strip-color": "^0.1.0",
         "universal-analytics": "^0.4.20"
     },
     "devDependencies": {
         "@babel/core": "^7.3.4",
         "@babel/preset-env": "^7.3.4",
-        "@lwc/jest-preset": "^4.3.1",
-        "@salesforce/eslint-config-lwc": "^0.4.0",
-        "@salesforce/wire-service-jest-util": "^2.3.0",
+        "@salesforce/eslint-config-lwc": "^0.7.0",
+        "@salesforce/wire-service-jest-util": "^2.4.2",
         "@types/dotenv": "^8.2.0",
         "@types/express": "^4.16.1",
         "@types/fs-extra": "^8.0.1",
         "@types/heroku-logger": "^1.0.0",
         "@types/ioredis": "^4.0.10",
-        "@types/jest": "^24.0.11",
+        "@types/jest": "^26.0.3",
         "@types/puppeteer": "^2.0.0",
         "@types/request": "^2.48.1",
         "@types/request-promise-native": "^1.0.15",
         "@types/strip-color": "^0.1.0",
         "@types/universal-analytics": "^0.4.2",
-        "@typescript-eslint/eslint-plugin": "^2.4.0",
-        "@typescript-eslint/parser": "^2.5.0",
+        "@typescript-eslint/eslint-plugin": "^2.30.0",
+        "@typescript-eslint/parser": "^2.30.0",
         "babel-jest": "^24.1.0",
         "dotenv": "^8.0.0",
-        "eslint": "^6.7.2",
-        "eslint-config-airbnb-typescript": "^6.3.1",
-        "eslint-config-prettier": "^6.0.0",
-        "eslint-plugin-import": "^2.14.0",
+        "eslint": "^7.3.1",
+        "eslint-config-airbnb-typescript": "^7.2.1",
+        "eslint-config-prettier": "^6.11.0",
+        "eslint-plugin-import": "^2.20.2",
         "eslint-plugin-prettier": "^3.1.0",
         "husky": "^3.0.7",
         "jest": "^24.4.0",
         "jest-puppeteer": "^4.0.0",
         "lint-staged": "^9.4",
-        "lwc-services": "^1.3.8",
+        "lwc-services": "^2.1.1",
         "mkdirp": "^0.5.1",
         "ncp": "^2.0.0",
         "nodemon": "^2.0.2",
         "npm-run-all": "^4.1.5",
-        "prettier": "^1.18.2",
-        "puppeteer": "^2.0.0",
-        "ts-jest": "^24.0.0",
+        "prettier": "2.0.5",
+        "puppeteer": "^5.2.1",
+        "ts-jest": "^26.0.3",
         "ts-node": "^8.0.3",
-        "typescript": "^3.5.1"
+        "typescript": "^3.8.3"
     },
     "husky": {
-        "hooks": {
-            "pre-push": "rm -rf tmp/*; rm -rf src/tmp/*"
-        }
+        "hooks": {}
     },
     "nodemonConfig": {
         "watch": [
-            "src/**/*"
+            "src/server/**/*.ts"
         ],
         "ext": "ts, css, html, js",
         "ignore": [
             "src/**/*.spec.ts",
             "src/**/*.test.ts"
         ],
-        "exec": "yarn local:web",
+        "exec": "yarn build:server && heroku local web=1,orgbuilder=1",
         "signal": "SIGTERM"
     },
     "lint-staged": {

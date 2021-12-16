@@ -30,27 +30,30 @@ const makesTemplates = (templateParam): string[] => {
     return [templateParam];
 };
 
-const deployMsgBuilder = (req): DeployRequest => {
+const deployMsgBuilder = async (req): Promise<DeployRequest> => {
     validateQuery(req.query); // check for exploits
-    const repos = makesTemplates(req.query.template).map(template => {
-        logger.debug(`deployMsgBuilder: template is ${template}`);
-        const path = template.replace('https://github.com/', '');
-        const username = filterAlphaHypenUnderscore(path.split('/')[0]).toLowerCase();
-        const repo = filterAlphaHypenUnderscore(path.split('/')[1]).toLowerCase();
-        return {
-            source: 'github',
-            username,
-            repo,
-            branch: path.includes('/tree/') ? filterAlphaHypenUnderscore(path.split('/tree/')[1]) : undefined,
-            whitelisted: checkWhitelist(username, repo)
-        };
-    });
+    const repos = await Promise.all(
+        makesTemplates(req.query.template).map(async (template) => {
+            logger.debug(`deployMsgBuilder: template is ${template}`);
+            const path = template.replace('https://github.com/', '');
+            const username = filterAlphaHypenUnderscore(path.split('/')[0]).toLowerCase();
+            const repo = filterAlphaHypenUnderscore(path.split('/')[1]).toLowerCase();
+            return {
+                source: 'github',
+                username,
+                repo,
+                branch: path.includes('/tree/') ? filterAlphaHypenUnderscore(path.split('/tree/')[1]) : undefined,
+                whitelisted: await checkWhitelist(username, repo)
+            };
+        })
+    );
 
     const message: DeployRequest = {
         deployId: getDeployId(repos[0].username, repos[0].repo),
         createdTimestamp: new Date(),
         repos,
         byoo: req.byoo,
+        noPool: req.query.nopool,
         visitor: processWrapper.UA_ID ? ua(processWrapper.UA_ID) : undefined,
         email: req.query.email,
         firstname: req.query.firstname,

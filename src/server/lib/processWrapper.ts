@@ -1,3 +1,5 @@
+import fs from 'fs-extra';
+
 const processWrapper = {
     PORT: process.env.PORT ?? 8443,
 
@@ -12,6 +14,14 @@ const processWrapper = {
     BYOO_SECRET: process.env.BYOO_SECRET,
     BYOO_CONSUMERKEY: process.env.BYOO_CONSUMERKEY,
     BYOO_CALLBACK_URI: process.env.BYOO_CALLBACK_URI,
+
+    // poolDrain credentials
+    PD_KEY: process.env.LOCAL_ONLY_KEY_PATH
+        ? fs.readFileSync(process.env.LOCAL_ONLY_KEY_PATH)
+        : process.env.PD_KEY,
+    PD_USERNAME: process.env.PD_USERNAME,
+    PD_CONSUMERKEY: process.env.PD_CONSUMERKEY,
+    PD_CALLBACK_URI: process.env.PD_CALLBACK_URI,
 
     // template repo security features
     GITHUB_USERNAME_WHITELIST: process.env.GITHUB_USERNAME_WHITELIST,
@@ -30,10 +40,10 @@ const processWrapper = {
 
     // single-repo deployer
     SINGLE_REPO: process.env.SINGLE_REPO,
+
     // google analytics
     UA_ID: process.env.UA_ID,
-
-    sfdcLeadCaptureServlet: process.env.sfdcLeadCaptureServlet
+    LEAD_QUEUE: process.env.LEAD_QUEUE
 };
 
 export { processWrapper };
