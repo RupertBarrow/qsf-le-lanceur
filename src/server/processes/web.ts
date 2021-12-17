@@ -35,7 +35,7 @@ app.use(cors());
 app.use(function (req, res, next) {
     console.log('### EXPRESS : set Access Control Allow Origin, etc.')
 
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', ' https://enterprise-platform-112-dev-ed.lightning.force.com');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type');
     next();
