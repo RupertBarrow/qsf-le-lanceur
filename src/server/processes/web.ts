@@ -101,7 +101,7 @@ app.get(
         console.log('### /launch : OK 2')
 
         let resultat = res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
-        console.log('### /launch : OK 3')
+        console.log('### /launch : OK 3 resultat = ', JSON.stringify(resultat))
 
         return resultat
     })
