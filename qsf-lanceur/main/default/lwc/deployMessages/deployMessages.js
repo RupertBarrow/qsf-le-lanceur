@@ -80,6 +80,7 @@ export default class DeployMessages extends LightningElement {
     fetch(`${SERVER}${url}`, {
       method: 'GET',                                 // *GET, POST, PUT, DELETE, etc.
       mode: 'cors',                                   // no-cors, *cors, same-origin
+      redirect: 'follow',
       headers: {
         //'Content-Type': 'application/json'
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -113,6 +114,7 @@ export default class DeployMessages extends LightningElement {
       fetch(`${SERVER}/results/${config.deployId}`, {
         method: 'GET',                                  // *GET, POST, PUT, DELETE, etc.
         mode: 'cors',                                   // no-cors, *cors, same-origin
+        redirect: 'follow',
         headers: {
           //'Content-Type': 'application/json'
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -142,6 +144,7 @@ export default class DeployMessages extends LightningElement {
     fetch('${SERVER}/delete', {
       method: 'POST',                                 // *GET, POST, PUT, DELETE, etc.
       mode: 'cors',                                   // no-cors, *cors, same-origin
+      redirect: 'follow',
       body: JSON.stringify({
         deployId: this.results.deployId,
       }),

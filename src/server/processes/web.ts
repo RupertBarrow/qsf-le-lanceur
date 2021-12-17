@@ -30,17 +30,11 @@ app.listen(port, () => {
 app.use(express.static('dist'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
-
-app.use(function (req, res, next) {
-    console.log('### EXPRESS : set Access Control Allow Origin, etc.')
-
-    res.setHeader('Access-Control-Allow-Origin', ' https://enterprise-platform-112-dev-ed.lightning.force.com');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type');
-    next();
-});
-
+app.use(cors({
+    origin : '*',
+    methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
+    allowedHeaders: ['X-Requested-With, Content-Type']
+}));
 
 function wrapAsync(fn: any) {
     return function (req, res, next) {
