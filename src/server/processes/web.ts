@@ -31,9 +31,9 @@ app.use(express.static('dist'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-    origin : 'https://enterprise-platform-112-dev-ed.lightning.force.com',
+    origin : '*',
     methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
-    allowedHeaders: ['X-Requested-With, Content-Type']
+    allowedHeaders: ['X-Requested-With', 'Content-Type']
 }));
 
 function wrapAsync(fn: any) {
