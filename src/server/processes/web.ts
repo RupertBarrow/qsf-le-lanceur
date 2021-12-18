@@ -21,11 +21,13 @@ import { CDS } from '../lib/CDS';
 const app: express.Application = express();
 const port = processWrapper.PORT;
 
+/*
 app.use(cors({
     origin : '*',
     methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
     allowedHeaders: ['X-Requested-With', 'Content-Type']
 }));
+*/
 
 app.listen(port, () => {
     logger.info(`Example app listening on port ${port}!`);
