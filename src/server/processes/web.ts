@@ -19,8 +19,13 @@ import { DeployRequest } from '../lib/types';
 import { CDS } from '../lib/CDS';
 
 const app: express.Application = express();
-
 const port = processWrapper.PORT;
+
+app.use(cors({
+    origin : '*',
+    methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
+    allowedHeaders: ['X-Requested-With', 'Content-Type']
+}));
 
 app.listen(port, () => {
     logger.info(`Example app listening on port ${port}!`);
@@ -30,11 +35,6 @@ app.listen(port, () => {
 app.use(express.static('dist'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors({
-    origin : '*',
-    methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
-    allowedHeaders: ['X-Requested-With', 'Content-Type']
-}));
 
 function wrapAsync(fn: any) {
     return function (req, res, next) {
