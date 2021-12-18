@@ -94,12 +94,9 @@ app.get(
         console.log('### /launch : OK 1')
 
         const message = await commonDeploy(req, '/launch');
-        console.log('### /launch : OK 2')
 
-        let resultat = res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
-        console.log('### /launch : OK 3 resultat = ', JSON.stringify(resultat))
-
-        return resultat
+        res.send({ deployId: ${message.deployId.trim()} });
+        //return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
     })
 );
 
