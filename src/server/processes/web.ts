@@ -5,7 +5,7 @@ import ua from 'universal-analytics';
 import path from 'path';
 import jsforce from 'jsforce';
 
-import cors from 'cors';
+//import cors from 'cors';
 
 import { putDeployRequest, getKeys, cdsDelete, cdsRetrieve, cdsPublish, putLead, getAllPooledOrgIDs } from '../lib/redisNormal';
 import { deployMsgBuilder } from '../lib/deployMsgBuilder';
