@@ -95,7 +95,7 @@ app.get(
 
         const message = await commonDeploy(req, '/launch');
 
-        res.send({ deployId: ${message.deployId.trim()} });
+        res.send({ deployId: `${message.deployId.trim()}` });
         //return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
     })
 );
