@@ -155,7 +155,7 @@ app.get(
     '/authUrl',
     wrapAsync(async (req, res, next) => {
         const byooOauth2 = new jsforce.OAuth2({
-            redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://${processWrapper.HEROKU_APP_NAME}.herokuapp.com:${port}/token`,
+            redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://localhost:${port}/token`,
             clientId:     processWrapper.BYOO_CONSUMERKEY,
             clientSecret: processWrapper.BYOO_SECRET,
             loginUrl:     req.query.base_url
@@ -163,7 +163,8 @@ app.get(
         // console.log('state will be', JSON.stringify(req.query));
         res.send(
             byooOauth2.getAuthorizationUrl({
-                scope: 'api id web openid',
+                //scope: 'api id web openid',
+                scope: 'api',
                 state: JSON.stringify(req.query)
             })
         );
@@ -176,7 +177,7 @@ app.get(
         const state = JSON.parse(req.query.state);
         // console.log(`state`, state);
         const byooOauth2 = new jsforce.OAuth2({
-            redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://${processWrapper.HEROKU_APP_NAME}.herokuapp.com:${port}/token`,
+            redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://localhost:${port}/token`,
             clientId:     processWrapper.BYOO_CONSUMERKEY,
             clientSecret: processWrapper.BYOO_SECRET,
             loginUrl:     state.base_url
