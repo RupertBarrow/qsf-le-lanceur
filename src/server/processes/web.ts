@@ -5,6 +5,7 @@ import ua from 'universal-analytics';
 import path from 'path';
 import jsforce from 'jsforce';
 
+// RBW FIXME
 //import cors from 'cors';
 
 import { putDeployRequest, getKeys, cdsDelete, cdsRetrieve, cdsPublish, putLead, getAllPooledOrgIDs } from '../lib/redisNormal';
@@ -22,6 +23,9 @@ const app: express.Application = express();
 const port = processWrapper.PORT;
 
 /*
+ * RBW FIXME
+ *
+
 app.use(cors({
     origin : '*',
     methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'],
@@ -91,10 +95,11 @@ app.get(
         if (req.query.email === 'required') {
             return res.redirect(multiTemplateURLBuilder(req.query.template, '/#userinfo'));
         }
+
+        // Launch
         console.log('### /launch : OK 1')
 
         const message = await commonDeploy(req, '/launch');
-
         res.send({ deployId: `${message.deployId.trim()}` });
         //return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
     })
@@ -150,10 +155,10 @@ app.get(
     '/authUrl',
     wrapAsync(async (req, res, next) => {
         const byooOauth2 = new jsforce.OAuth2({
-            redirectUri: processWrapper.BYOO_CALLBACK_URI ?? `http://localhost:${port}/token`,
-            clientId: processWrapper.BYOO_CONSUMERKEY,
+            redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://${processWrapper.HEROKU_APP_NAME}.herokuapp.com:${port}/token`,
+            clientId:     processWrapper.BYOO_CONSUMERKEY,
             clientSecret: processWrapper.BYOO_SECRET,
-            loginUrl: req.query.base_url
+            loginUrl:     req.query.base_url
         });
         // console.log('state will be', JSON.stringify(req.query));
         res.send(
@@ -171,10 +176,10 @@ app.get(
         const state = JSON.parse(req.query.state);
         // console.log(`state`, state);
         const byooOauth2 = new jsforce.OAuth2({
-            redirectUri: processWrapper.BYOO_CALLBACK_URI ?? `http://localhost:${port}/token`,
-            clientId: processWrapper.BYOO_CONSUMERKEY,
+            redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://${processWrapper.HEROKU_APP_NAME}.herokuapp.com:${port}/token`,
+            clientId:     processWrapper.BYOO_CONSUMERKEY,
             clientSecret: processWrapper.BYOO_SECRET,
-            loginUrl: state.base_url
+            loginUrl:     state.base_url
         });
         const conn = new jsforce.Connection({ oauth2: byooOauth2 });
         const userinfo = await conn.authorize(req.query.code);
@@ -188,8 +193,8 @@ app.get(
                 byoo: {
                     accessToken: conn.accessToken,
                     instanceUrl: conn.instanceUrl,
-                    username: userinfo.id,
-                    orgId: userinfo.organizationId
+                    username:    userinfo.id,
+                    orgId:       userinfo.organizationId
                 }
             },
             'byoo'

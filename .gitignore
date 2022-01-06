@@ -51,7 +51,7 @@ dump.rdb
 built
 dist
 /lib
-/.sfdx
+.sfdx
 .DS_Store
 
 # specialized tests
