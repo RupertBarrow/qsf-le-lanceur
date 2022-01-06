@@ -163,8 +163,7 @@ app.get(
         // console.log('state will be', JSON.stringify(req.query));
         res.send(
             byooOauth2.getAuthorizationUrl({
-                //scope: 'api id web openid',
-                scope: 'api',
+                scope: 'api id web openid',
                 state: JSON.stringify(req.query)
             })
         );
