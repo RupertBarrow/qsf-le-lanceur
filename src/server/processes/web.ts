@@ -213,7 +213,7 @@ app.get(
 //  API : Get AuthURL with encoded BYOO info
 
 app.get(
-  '/api//authUrl2',
+  '/api/authUrl2',
   wrapAsync(async (req, res, next) => {
     const byooOauth2 = new jsforce.OAuth2({
       redirectUri:  req.query.byooCallbackURI,
