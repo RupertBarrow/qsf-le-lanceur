@@ -33,7 +33,9 @@ const makesTemplates = (templateParam): string[] => {
 };
 
 const deployMsgBuilder = async (req): Promise<DeployRequest> => {
-    validateQuery(req.query); // check for exploits
+    if (!req.sfdx) {
+        validateQuery(req.query); // check for exploits
+    }
 
     let repos;
     if (req.query.template) {

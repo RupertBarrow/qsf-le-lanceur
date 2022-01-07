@@ -308,6 +308,9 @@ app.get(
 app.get(
   '/api/sfdx',
   wrapAsync(async (req, res, next) => {
+    req.query.sfdxAuthUrl = req.query.sfdxAuthUrl || 'force://PlatformCLI::5Aep8615Ke.xzM1pWLiDs0K4MbHdWdWIR4hgL2jJW86KAPnMSRMyW56xiqbvpWAJoA3gezZurBFyqaSN65Z8g.z@rbarrow-dev-ed.my.salesforce.com';
+    req.query.sfdxCommand = req.query.sfdxCommand || 'echo ${req.query.sfdxAuthUrl} > /tmp/auth.txt && sfdx auth:sfdxurl:store -f /tmp/auth.txt -s -a qsf0lelanceur --json';
+
     logger.debug(`### /api/sfdx : req.query.sfdxAuthUrl = ${req.query.sfdxAuthUrl}`)
     logger.debug(`### /api/sfdx : req.query.sfdxCommand = ${req.query.sfdxCommand}`)
 
@@ -321,8 +324,8 @@ app.get(
         template: req.query.template
       },
       sfdx: {
-        authUrl: req.query.sfdxAuthUrl || 'force://PlatformCLI::5Aep8615Ke.xzM1pWLiDs0K4MbHdWdWIR4hgL2jJW86KAPnMSRMyW56xiqbvpWAJoA3gezZurBFyqaSN65Z8g.z@rbarrow-dev-ed.my.salesforce.com',
-        command: req.query.sfdxCommand || 'sfdx force:org:display --verbose --json'
+        authUrl: req.query.sfdxAuthUrl,
+        command: req.query.sfdxCommand
       }
     },
       'byoo'
