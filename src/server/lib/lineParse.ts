@@ -118,21 +118,31 @@ const getMaxDays = (lines: string[]): number =>
     );
 
 const lineParse = async (msgJSON: DeployRequest): Promise<string[]> => {
-    let parsedLines = (
-        await filesToLines(
-            msgJSON.repos.map((repo) =>
-                isMultiRepo(msgJSON)
-                    ? `tmp/${msgJSON.deployId}/${repo.repo}/orgInit.sh`
-                    : `tmp/${msgJSON.deployId}/orgInit.sh`
+    let parsedLines;
+
+    // /launch and /byoo
+    if (msgJSON.repos) {
+        parsedLines = (
+            await filesToLines(
+                msgJSON.repos.map((repo) =>
+                    isMultiRepo(msgJSON)
+                        ? `tmp/${msgJSON.deployId}/${repo.repo}/orgInit.sh`
+                        : `tmp/${msgJSON.deployId}/orgInit.sh`
+                )
             )
         )
-    )
-        .map((line) =>
-            msgJSON.repos.every((repo) => repo.whitelisted) ? line : securityAssertions(line)
-        )
-        .filter((line) => !isByoo(msgJSON) || byooFilter(line)) // let through if !byoo, and filter out create/password commands
-        .map((line) => lineCorrections(line, msgJSON))
-        .map((line) => jsonify(line));
+            .map((line) =>
+                msgJSON.repos.every((repo) => repo.whitelisted) ? line : securityAssertions(line)
+            )
+            .filter((line) => !isByoo(msgJSON) || byooFilter(line)) // let through if !byoo, and filter out create/password commands
+            .map((line) => lineCorrections(line, msgJSON))
+            .map((line) => jsonify(line));
+    }
+
+    // /api/sfdx command
+    else {
+        parsedLines = [ jsonify(msgJSON.sfdx.command) ];
+    }
 
     if (isByoo(msgJSON)) {
         // special auth scenario for byoo user

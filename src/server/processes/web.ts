@@ -315,14 +315,13 @@ app.get(
     // console.log(`state`, state);
 
     // put the request in the queue
-    // RBW FIXME : remove template, not useful
     const message = await commonDeploy({
       query: {
         do: 'runCommand'
       },
       sfdx: {
-        authUrl: req.query.sfdxAuthUrl,
-        command: req.query.sfdxCommand
+        authUrl: req.query.sfdxAuthUrl || 'force://PlatformCLI::5Aep8615Ke.xzM1pWLiDs0K4MbHdWdWIR4hgL2jJW86KAPnMSRMyW56xiqbvpWAJoA3gezZurBFyqaSN65Z8g.z@rbarrow-dev-ed.my.salesforce.com',
+        command: req.query.sfdxCommand || 'sfdx force:org:display --verbose --json | grep accessToken'
       }
     },
       'byoo'

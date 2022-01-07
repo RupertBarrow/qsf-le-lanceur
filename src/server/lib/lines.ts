@@ -15,6 +15,8 @@ const getDisplayResults = async (path: string, username: string): Promise<SfdxDi
     (await exec2JSON(`sfdx force:org:display -u ${username} --json`, { cwd: path })).result as SfdxDisplayResult;
 
 const lineRunner = async (msgJSON: DeployRequest, output: CDS): Promise<CDS> => {
+    logger.debug(`### lineRunner : msgJSON = ${JSON.stringify(msgJSON)}`)
+
     // get the lines we'll run
     let lines;
     try {

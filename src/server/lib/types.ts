@@ -27,6 +27,11 @@ export interface DeployRequest {
         orgId: string;
     };
     repos?: DeployRequestRepo[]; // new version to hold multiples, support more sources
+
+    sfdx?: {
+        authUrl: string;
+        command: string;
+    }
 }
 
 export interface DeployRequestRepo {

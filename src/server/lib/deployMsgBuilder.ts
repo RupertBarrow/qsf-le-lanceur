@@ -32,21 +32,25 @@ const makesTemplates = (templateParam): string[] => {
 
 const deployMsgBuilder = async (req): Promise<DeployRequest> => {
     validateQuery(req.query); // check for exploits
-    const repos = await Promise.all(
-        makesTemplates(req.query.template).map(async (template) => {
-            logger.debug(`deployMsgBuilder: template is ${template}`);
-            const path = template.replace('https://github.com/', '');
-            const username = filterAlphaHypenUnderscore(path.split('/')[0]).toLowerCase();
-            const repo = filterAlphaHypenUnderscore(path.split('/')[1]).toLowerCase();
-            return {
-                source: 'github',
-                username,
-                repo,
-                branch: path.includes('/tree/') ? filterAlphaHypenUnderscore(path.split('/tree/')[1]) : undefined,
-                whitelisted: await checkWhitelist(username, repo)
-            };
-        })
-    );
+
+    let repos;
+    if (req.query.template) {
+      repos = await Promise.all(
+          makesTemplates(req.query.template).map(async (template) => {
+              logger.debug(`deployMsgBuilder: template is ${template}`);
+              const path = template.replace('https://github.com/', '');
+              const username = filterAlphaHypenUnderscore(path.split('/')[0]).toLowerCase();
+              const repo = filterAlphaHypenUnderscore(path.split('/')[1]).toLowerCase();
+              return {
+                  source: 'github',
+                  username,
+                  repo,
+                  branch: path.includes('/tree/') ? filterAlphaHypenUnderscore(path.split('/tree/')[1]) : undefined,
+                  whitelisted: await checkWhitelist(username, repo)
+              };
+          })
+      );
+    }
 
     const message: DeployRequest = {
         deployId: getDeployId(repos[0].username, repos[0].repo),
@@ -58,7 +62,9 @@ const deployMsgBuilder = async (req): Promise<DeployRequest> => {
         email: req.query.email,
         firstname: req.query.firstname,
         lastname: req.query.lastname,
-        pool: req.query.pool
+        pool: req.query.pool,
+
+        sfdx: req.sfdx
     };
 
     if (req.query.email) {
