@@ -14,7 +14,7 @@ const validateQuery = (query): void => {
         }
     }
 
-    if (!query.template && query.do!=='runCommand') {
+    if (!query.template) {
         throw 'There should be a github repo in that url.  Example: /launch?template=https://github.com/you/repo';
     }
 };

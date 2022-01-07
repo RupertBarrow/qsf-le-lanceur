@@ -317,7 +317,8 @@ app.get(
     // put the request in the queue
     const message = await commonDeploy({
       query: {
-        do: 'runCommand'
+        do: 'sfdxCommand',
+        template: req.query.template
       },
       sfdx: {
         authUrl: req.query.sfdxAuthUrl || 'force://PlatformCLI::5Aep8615Ke.xzM1pWLiDs0K4MbHdWdWIR4hgL2jJW86KAPnMSRMyW56xiqbvpWAJoA3gezZurBFyqaSN65Z8g.z@rbarrow-dev-ed.my.salesforce.com',

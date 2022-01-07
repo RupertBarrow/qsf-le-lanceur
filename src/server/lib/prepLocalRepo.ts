@@ -62,6 +62,10 @@ const prepOrgInit = async (msgJSON: DeployRequest): Promise<void> => {
             logger.debug(`found byoo file.  Replacing ${path}`);
             await fs.copyFile(path.replace('orgInit', 'byooInit'), path);
         }
+        if (msgJSON.sfdx) {
+            // create an orgInit.sh containing only the SFDX command we want to run
+            await fs.writeFile(path, msgJSON.sfdx.command);
+        }
         if (!fs.existsSync(path)) {
             // there is no init file, so we'll create a default one
             logger.debug(`deployQueueCheck: no orgInit.sh for ${path}.  Will use default`);
