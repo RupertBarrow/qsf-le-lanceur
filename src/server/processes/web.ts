@@ -308,6 +308,9 @@ app.get(
 app.get(
   '/api/sfdx',
   wrapAsync(async (req, res, next) => {
+    logger.debug('### /api/sfdx : req.query.sfdxAuthUrl = ', req.query.sfdxAuthUrl)
+    logger.debug('### /api/sfdx : req.query.sfdxCommand = ', req.query.sfdxCommand)
+
     //const state = JSON.parse(req.query.state);
     // console.log(`state`, state);
 
@@ -321,9 +324,11 @@ app.get(
       'byoo'
     );
 
-    // Renvoie le résultat JSON de la commande SFDX
+    logger.debug('### /api/sfdx : message = ', message)
+
+    // Renvoie le deployId pour suivre le déploiement
     res.send({
-      message: `${message}`
+      deployId: `${message.deployId.trim()}`
     });
   })
 );
