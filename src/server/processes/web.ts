@@ -322,13 +322,13 @@ app.get(
       },
       sfdx: {
         authUrl: req.query.sfdxAuthUrl || 'force://PlatformCLI::5Aep8615Ke.xzM1pWLiDs0K4MbHdWdWIR4hgL2jJW86KAPnMSRMyW56xiqbvpWAJoA3gezZurBFyqaSN65Z8g.z@rbarrow-dev-ed.my.salesforce.com',
-        command: req.query.sfdxCommand || 'sfdx force:org:display --verbose --json | grep accessToken'
+        command: req.query.sfdxCommand || 'sfdx force:org:display --verbose --json'
       }
     },
       'byoo'
     );
 
-    logger.debug(`### /api/sfdx : message = ${message}`)
+    logger.debug(`### /api/sfdx : message = ${JSON.stringify(message)}`)
 
     // Renvoie le deployId pour suivre le déploiement
     res.send({

@@ -8,6 +8,8 @@ import ua from 'universal-analytics';
 import { processWrapper } from './processWrapper';
 
 const validateQuery = (query): void => {
+    logger.debug(`### validateQuery : query = ${query}`);
+
     for (const prop in query) {
         if (!shellSanitize(query[prop])) {
             throw new Error(`unsafe query parameter ${prop}`);

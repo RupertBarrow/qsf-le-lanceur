@@ -64,6 +64,7 @@ const prepOrgInit = async (msgJSON: DeployRequest): Promise<void> => {
         }
         if (msgJSON.sfdx) {
             // create an orgInit.sh containing only the SFDX command we want to run
+            logger.debug(`### commande SFDX à exécuter : ${msgJSON.sfdx.command}`);
             await fs.writeFile(path, msgJSON.sfdx.command);
         }
         if (!fs.existsSync(path)) {

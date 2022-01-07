@@ -174,15 +174,14 @@ const cdsRetrieve = async (deployId: string) => {
         const cds = JSON.parse(retrieved) as CDS;
         return cds;
     } else {
-        logger.warn(`No cds results found for deployId ${deployId}`);
+        logger.warn(`No cds results found for deployId '${deployId}'`);
         return new CDS({
             deployId,
             complete: true,
             errors: [
                 {
                     command: 'retrieval',
-                    error:
-                        'Results not found for your deployId. It may have been deleted or may have expired',
+                    error: `Results not found for your deployId '${deployId}'. It may have been deleted or may have expired`,
                     raw: ''
                 }
             ]
