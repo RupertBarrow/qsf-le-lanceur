@@ -237,11 +237,11 @@ app.get(
 app.get(
   '/api/token2',
   wrapAsync(async (req, res, next) => {
-    logger.info(`### In /api/token2 : req = `, req);
-    logger.info(`### In /api/token2 : state = `, req.query.state);
+    logger.debug(`### In /api/token2 : req = ${req}`);
+    logger.debug(`### In /api/token2 : state = ${req.query.state}`);
 
     const state = JSON.parse(req.query.state);
-    logger.info(`### In /api/token2 : json state = `, state);
+    logger.debug(`### In /api/token2 : json state = ${state}`);
     // console.log(`state`, state);
     
     const byooOauth2 = new jsforce.OAuth2({
@@ -250,7 +250,7 @@ app.get(
       clientSecret: state.byooSecret,
       loginUrl:     state.base_url
     });
-    logger.info(`### JSForce OK : byooOauth2 = `, byooOauth2);
+    logger.debug(`### JSForce OK : byooOauth2 = ${byooOauth2}`);
 
     const conn = new jsforce.Connection({ oauth2: byooOauth2 });
     const userinfo = await conn.authorize(req.query.code);
@@ -308,8 +308,8 @@ app.get(
 app.get(
   '/api/sfdx',
   wrapAsync(async (req, res, next) => {
-    logger.debug('### /api/sfdx : req.query.sfdxAuthUrl = ', req.query.sfdxAuthUrl)
-    logger.debug('### /api/sfdx : req.query.sfdxCommand = ', req.query.sfdxCommand)
+    logger.debug(`### /api/sfdx : req.query.sfdxAuthUrl = ${req.query.sfdxAuthUrl}`)
+    logger.debug(`### /api/sfdx : req.query.sfdxCommand = ${req.query.sfdxCommand}`)
 
     //const state = JSON.parse(req.query.state);
     // console.log(`state`, state);
@@ -324,7 +324,7 @@ app.get(
       'byoo'
     );
 
-    logger.debug('### /api/sfdx : message = ', message)
+    logger.debug(`### /api/sfdx : message = ${message}`)
 
     // Renvoie le deployId pour suivre le déploiement
     res.send({
