@@ -237,7 +237,11 @@ app.get(
 app.get(
   '/api/token2',
   wrapAsync(async (req, res, next) => {
+    logger.info(`### In /api/token2 : req = `, req);
+    logger.info(`### In /api/token2 : state = `, req.query.state);
+
     const state = JSON.parse(req.query.state);
+    logger.info(`### In /api/token2 : json state = `, state);
     // console.log(`state`, state);
     
     const byooOauth2 = new jsforce.OAuth2({
@@ -246,6 +250,8 @@ app.get(
       clientSecret: state.byooSecret,
       loginUrl:     state.base_url
     });
+    logger.info(`### JSForce OK : byooOauth2 = `, byooOauth2);
+
     const conn = new jsforce.Connection({ oauth2: byooOauth2 });
     const userinfo = await conn.authorize(req.query.code);
 
