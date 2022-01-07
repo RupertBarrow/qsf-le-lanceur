@@ -315,7 +315,11 @@ app.get(
     // console.log(`state`, state);
 
     // put the request in the queue
+    // RBW FIXME : remove template, not useful
     const message = await commonDeploy({
+      query: {
+        do: 'runCommand'
+      },
       sfdx: {
         authUrl: req.query.sfdxAuthUrl,
         command: req.query.sfdxCommand
