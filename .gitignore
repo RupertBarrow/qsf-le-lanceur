@@ -51,8 +51,12 @@ dump.rdb
 built
 dist
 /lib
-.sfdx
 .DS_Store
+redis-stable
+redis-stable.tar.gz
+.sfdx
+.sfdx/
+/.sfdx
 
 # specialized tests
 test/integrationTests/generatedRepos

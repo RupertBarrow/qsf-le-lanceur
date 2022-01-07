@@ -1,13 +1,13 @@
 {
-	"country": "FR",
-	"edition": "Developer",
-	"language": "fr",
-	"features": [],
-	"settings": {
-		"lightningExperienceSettings": {
-			"enableS1DesktopEnabled": true
-		}
-	},
-	"orgName": "QSF Lanceur",
-	"adminEmail": "rupert.barrow@lilo.org"
+    "country": "FR",
+    "edition": "Developer",
+    "language": "fr",
+    "features": [],
+    "settings": {
+        "lightningExperienceSettings": {
+            "enableS1DesktopEnabled": true
+        }
+    },
+    "orgName": "QSF Lanceur",
+    "adminEmail": "rupert.barrow@lilo.org"
 }

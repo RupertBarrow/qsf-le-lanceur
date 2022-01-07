@@ -34,7 +34,7 @@ app.use(cors({
 */
 
 app.listen(port, () => {
-    logger.info(`Example app listening on port ${port}!`);
+  logger.info(`Example app listening on port ${port}!`);
 });
 
 // app.use(favicon(path.join(__dirname, 'assets/favicons', 'favicon.ico')));
@@ -43,181 +43,300 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 function wrapAsync(fn: any) {
-    return function (req, res, next) {
-        // Make sure to `.catch()` any errors and pass them along to the `next()`
-        // middleware in the chain, in this case the error handler.
-        fn(req, res, next).catch(next);
-    };
+  return function (req, res, next) {
+    // Make sure to `.catch()` any errors and pass them along to the `next()`
+    // middleware in the chain, in this case the error handler.
+    fn(req, res, next).catch(next);
+  };
 }
 
 const commonDeploy = async (req, url: string) => {
-    const message: DeployRequest = await deployMsgBuilder(req);
+  const message: DeployRequest = await deployMsgBuilder(req);
 
-    if (message.visitor && !message.noPool) {
-        message.visitor.pageview(url).send();
-        message.visitor.event('Repo', getPoolKey(message, '-')).send();
-    }
+  if (message.visitor && !message.noPool) {
+    message.visitor.pageview(url).send();
+    message.visitor.event('Repo', getPoolKey(message, '-')).send();
+  }
 
-    utilities.runHerokuBuilder();
-    await Promise.all([
-        putDeployRequest(message),
-        cdsPublish(
-            new CDS({
-                deployId: message.deployId
-            })
-        )
-    ]);
+  utilities.runHerokuBuilder();
+  await Promise.all([
+    putDeployRequest(message),
+    cdsPublish( new CDS({ deployId: message.deployId}) )
+  ]);
 
-    return message;
+  return message;
 };
 
 app.post(
-    '/trial',
-    wrapAsync(async (req, res, next) => {
-        const [message] = await Promise.all([commonDeploy(req, '/trial'), putLead(req.body)]);
-        logger.debug('trial request', message);
-        res.redirect(`/#deploying/trial/${message.deployId.trim()}`);
-    })
+  '/trial',
+  wrapAsync(async (req, res, next) => {
+    const [message] = await Promise.all([
+      commonDeploy(req, '/trial'),
+      putLead(req.body)
+    ]);
+    logger.debug('trial request', message);
+    res.redirect(`/#deploying/trial/${message.deployId.trim()}`);
+  })
 );
 
 app.post(
-    '/delete',
-    wrapAsync(async (req, res, next) => {
-        await cdsDelete(req.body.deployId);
-        res.send({ redirectTo: '/#deleteConfirm' });
-    })
+  '/delete',
+  wrapAsync(async (req, res, next) => {
+    await cdsDelete(req.body.deployId);
+    res.send({ redirectTo: '/#deleteConfirm' });
+  })
 );
 
+//////////////////////////////////////////////////////////////////
+//  LAUNCH : create a scratch org and deploy repo to it
+
 app.get(
-    '/launch',
-    wrapAsync(async (req, res, next) => {
-        // allow repos to require the email parameter
-        if (req.query.email === 'required') {
-            return res.redirect(multiTemplateURLBuilder(req.query.template, '/#userinfo'));
-        }
+  '/launch',
+  wrapAsync(async (req, res, next) => {
+    // allow repos to require the email parameter
+    if (req.query.email === 'required') {
+      return res.redirect(multiTemplateURLBuilder(req.query.template, '/#userinfo'));
+    }
 
-        // Launch
-        console.log('### /launch : OK 1')
-
-        const message = await commonDeploy(req, '/launch');
-        res.send({ deployId: `${message.deployId.trim()}` });
-        //return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
-    })
+    const message = await commonDeploy(req, '/launch');
+    res.send({
+      deployId: `${message.deployId.trim()}`
+    });
+    //return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
+  })
 );
 
 app.get(['/', '/error', '/deploying/:format/:deployId', '/userinfo', '/byoo', '/testform', '/deleteConfirm'], (req, res, next) => {
-    res.sendFile('index.html', { root: path.join(__dirname, '../../../dist') });
+  res.sendFile('index.html', { root: path.join(__dirname, '../../../dist') });
 });
 
 app.get(['/byoo'], (req, res, next) => {
-    if (processWrapper.BYOO_CALLBACK_URI && processWrapper.BYOO_CONSUMERKEY && processWrapper.BYOO_SECRET) {
-        res.sendFile('index.html', { root: path.join(__dirname, '../../../dist') });
-    } else {
-        setImmediate(() => {
-            next(new Error('Connected app credentials not properly configured for Bring Your Own Org feature'));
-        });
-    }
+  if (processWrapper.BYOO_CALLBACK_URI && processWrapper.BYOO_CONSUMERKEY && processWrapper.BYOO_SECRET) {
+    res.sendFile('index.html', { root: path.join(__dirname, '../../../dist') });
+  } else {
+    setImmediate(() => {
+      next(new Error('Connected app credentials not properly configured for Bring Your Own Org feature'));
+    });
+  }
 });
 
 app.get(
-    '/pools',
-    wrapAsync(async (req, res, next) => {
-        const keys = await getKeys();
-        res.send(keys);
-    })
+  '/pools',
+  wrapAsync(async (req, res, next) => {
+    const keys = await getKeys();
+    res.send(keys);
+  })
 );
 
 app.get(
-    '/pools/:poolname',
-    wrapAsync(async (req, res, next) => {
-        const orgIDs = await getAllPooledOrgIDs(req.params.poolname);
-        res.send(orgIDs);
-    })
+  '/pools/:poolname',
+  wrapAsync(async (req, res, next) => {
+    const orgIDs = await getAllPooledOrgIDs(req.params.poolname);
+    res.send(orgIDs);
+  })
 );
 
 app.get(
-    '/results/:deployId',
-    wrapAsync(async (req, res, next) => {
-        const results = await cdsRetrieve(req.params.deployId);
-        res.send(results);
-    })
+  '/results/:deployId',
+  wrapAsync(async (req, res, next) => {
+    const results = await cdsRetrieve(req.params.deployId);
+    res.send(results);
+  })
 );
 
 app.get(['/favicons/favicon.ico', '/favicon.ico'], (req, res, next) => {
-    res.sendFile('favicon.ico', { root: path.join(__dirname, '../../../dist/resources/favicons') });
+  res.sendFile('favicon.ico', { root: path.join(__dirname, '../../../dist/resources/favicons') });
 });
 
 app.get('/service-worker.js', (req, res, next) => {
-    res.sendStatus(200);
+  res.sendStatus(200);
 });
 
+
+//////////////////////////////////////////////////////////////////
+//  BYOO : get authentication URL
+
 app.get(
-    '/authUrl',
-    wrapAsync(async (req, res, next) => {
-        const byooOauth2 = new jsforce.OAuth2({
-            redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://localhost:${port}/token`,
-            clientId:     processWrapper.BYOO_CONSUMERKEY,
-            clientSecret: processWrapper.BYOO_SECRET,
-            loginUrl:     req.query.base_url
-        });
-        // console.log('state will be', JSON.stringify(req.query));
-        res.send(
-            byooOauth2.getAuthorizationUrl({
-                scope: 'api id web openid',
-                state: JSON.stringify(req.query)
-            })
-        );
-    })
+  '/authUrl',
+  wrapAsync(async (req, res, next) => {
+    const byooOauth2 = new jsforce.OAuth2({
+      redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://localhost:${port}/token`,
+      clientId:     processWrapper.BYOO_CONSUMERKEY,
+      clientSecret: processWrapper.BYOO_SECRET,
+      loginUrl:     req.query.base_url
+    });
+    // console.log('state will be', JSON.stringify(req.query));
+    res.send(
+      byooOauth2.getAuthorizationUrl({
+        scope: 'api id web openid',
+        state: JSON.stringify(req.query)
+      })
+    );
+  })
 );
 
 app.get(
-    '/token',
-    wrapAsync(async (req, res, next) => {
-        const state = JSON.parse(req.query.state);
-        // console.log(`state`, state);
-        const byooOauth2 = new jsforce.OAuth2({
-            redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://localhost:${port}/token`,
-            clientId:     processWrapper.BYOO_CONSUMERKEY,
-            clientSecret: processWrapper.BYOO_SECRET,
-            loginUrl:     state.base_url
-        });
-        const conn = new jsforce.Connection({ oauth2: byooOauth2 });
-        const userinfo = await conn.authorize(req.query.code);
+  '/token',
+  wrapAsync(async (req, res, next) => {
+    const state = JSON.parse(req.query.state);
+    // console.log(`state`, state);
+    const byooOauth2 = new jsforce.OAuth2({
+      redirectUri:  processWrapper.BYOO_CALLBACK_URI ?? `http://localhost:${port}/token`,
+      clientId:     processWrapper.BYOO_CONSUMERKEY,
+      clientSecret: processWrapper.BYOO_SECRET,
+      loginUrl:     state.base_url
+    });
+    const conn = new jsforce.Connection({ oauth2: byooOauth2 });
+    const userinfo = await conn.authorize(req.query.code);
 
-        // put the request in the queue
-        const message = await commonDeploy(
-            {
-                query: {
-                    template: state.template
-                },
-                byoo: {
-                    accessToken: conn.accessToken,
-                    instanceUrl: conn.instanceUrl,
-                    username:    userinfo.id,
-                    orgId:       userinfo.organizationId
-                }
-            },
-            'byoo'
-        );
-        return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
-    })
+    // put the request in the queue
+    const message = await commonDeploy({
+      query: {
+        template: state.template
+      },
+      byoo: {
+        accessToken: conn.accessToken,
+        instanceUrl: conn.instanceUrl,
+        username:    userinfo.id,
+        orgId:       userinfo.organizationId
+      }
+    },
+      'byoo'
+    );
+
+    return res.redirect(`/#deploying/deployer/${message.deployId.trim()}`);
+  })
+);
+
+
+//////////////////////////////////////////////////////////////////
+//  API : Get AuthURL with encoded BYOO info
+
+app.get(
+  '/api//authUrl2',
+  wrapAsync(async (req, res, next) => {
+    const byooOauth2 = new jsforce.OAuth2({
+      redirectUri:  req.query.byooCallbackURI,
+      clientId:     req.query.byooConsumerKey,
+      clientSecret: req.query.byooSecret,
+      loginUrl:     req.query.base_url
+    });
+    // console.log('state will be', JSON.stringify(req.query));
+    res.send(
+      byooOauth2.getAuthorizationUrl({
+        scope: 'api id web openid',
+        state: JSON.stringify(req.query)
+      })
+    );
+  })
+);
+
+//////////////////////////////////////////////////////////////////
+//  API : OAuth callback URL for authentication, returns everything needed for byoo
+
+app.get(
+  '/api/token2',
+  wrapAsync(async (req, res, next) => {
+    const state = JSON.parse(req.query.state);
+    // console.log(`state`, state);
+    
+    const byooOauth2 = new jsforce.OAuth2({
+      redirectUri:  state.byooCallbackURI,
+      clientId:     state.byooConsumerKey,
+      clientSecret: state.byooSecret,
+      loginUrl:     state.base_url
+    });
+    const conn = new jsforce.Connection({ oauth2: byooOauth2 });
+    const userinfo = await conn.authorize(req.query.code);
+
+    // Renvoie le deployId pour suivre le déploiement
+    res.send({
+      template:    state.template,
+      accessToken: conn.accessToken,
+      instanceUrl: conn.instanceUrl,
+      username:    userinfo.id,
+      orgId:       userinfo.organizationId
+    });
+  })
+);
+
+//////////////////////////////////////////////////////////////////
+//  API : Call BYOO with all the authentication parameters
+
+app.get(
+  '/api/byoo2',
+  wrapAsync(async (req, res, next) => {
+    //const state = JSON.parse(req.query.state);
+    //console.log(`state`, state);
+
+    // put the request in the queue
+    const message = await commonDeploy({
+      query: {
+        template:    req.query.template
+      },
+      byoo: {
+        accessToken: req.query.accessToken,
+        instanceUrl: req.query.instanceUrl,
+        username:    req.query.username,
+        orgId:       req.query.orgId
+      }
+    },
+      'byoo'
+    );
+
+    // Renvoie le deployId pour suivre le déploiement
+    res.send({
+      deployId: `${message.deployId.trim()}`
+    });
+  })
+);
+
+//////////////////////////////////////////////////////////////////
+//  API : Run a single SFDX command
+
+// RBW TODO : prendre en compte isRunSfdxCommand :
+// - deployMsgBuilder.ts : l51 DeployRequest, 
+// - linesParse.ts : l121 parsedLines, cas particuliers comme isByoo
+// - lines.ts : cas particuliers comme isByoo
+
+app.get(
+  '/api/sfdx',
+  wrapAsync(async (req, res, next) => {
+    //const state = JSON.parse(req.query.state);
+    // console.log(`state`, state);
+
+    // put the request in the queue
+    const message = await commonDeploy({
+      sfdx: {
+        authUrl: req.query.sfdxAuthUrl,
+        command: req.query.sfdxCommand
+      }
+    },
+      'byoo'
+    );
+
+    // Renvoie le résultat JSON de la commande SFDX
+    res.send({
+      message: `${message}`
+    });
+  })
 );
 
 app.get('*', (req, res, next) => {
-    setImmediate(() => {
-        next(new Error(`Route not found: ${req.url} on action ${req.method}`));
-    });
+  setImmediate(() => {
+    next(new Error(`Route not found: ${req.url} on action ${req.method}`));
+  });
 });
 
 app.use((error, req, res, next) => {
-    if (processWrapper.UA_ID) {
-        const visitor = ua(processWrapper.UA_ID);
-        // TODO handle array of templates
-        visitor.event('Error', req.query.template).send();
-    }
-    logger.error(`request failed: ${req.url}`);
-    logger.error(error);
-    return res.redirect(`/#error?msg=${error}`);
+  if (processWrapper.UA_ID) {
+    const visitor = ua(processWrapper.UA_ID);
+    // TODO handle array of templates
+    visitor.event('Error', req.query.template).send();
+  }
+  logger.error(`request failed: ${req.url}`);
+  logger.error(error);
+  return res.redirect(`/#error?msg=${error}`);
 });
 
 // process.on('unhandledRejection', e => {

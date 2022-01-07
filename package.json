@@ -7,14 +7,14 @@
         "build": "yarn build:client && yarn build:server",
         "build:server": "tsc -b ./src/server",
         "build:client": "lwc-services build -m production",
-        "heroku:dev:down": "heroku ps:scale web=0 orgbuilder=0 pooldrain=0 -a hosted-scratch-dev",
-        "heroku:dev:up": "heroku ps:scale web=1 orgbuilder=2 -a hosted-scratch-dev",
+        "heroku:dev:down": "heroku ps:scale web=0 orgbuilder=0 pooldrain=0 -a qsf0-le-lanceur",
+        "heroku:dev:up": "heroku ps:scale web=1 orgbuilder=2             -a qsf0-le-lanceur",
         "local": "npm run build && heroku local dynoskimmer=1 && heroku local poolskimmer=1 && heroku local oneoffbuilder=1 && heroku local poolwatcher=1 && heroku local pooldeployer=1 && heroku local orgdeleter=1 && heroku local web=1,orgbuilder=5",
         "local:web": "yarn build && heroku local web=1,orgbuilder=1",
         "local:clean": "heroku local orgdeleter=1",
         "prettier": "prettier --write '**/*.{css,html,js,json,md,yaml,yml}'",
         "start": "node .",
-        "test:generate": "ts-node --project src/server/__tests__/tsconfig.json src/server/__tests__/helpers/repoCodeGen.ts",
+        "test:generate": "npx ts-node --project src/server/__tests__/tsconfig.json src/server/__tests__/helpers/repoCodeGen.ts",
         "test:client": "jest src/client/modules/ -c src/client/jest.config.lwc.js",
         "test:client:watch": "jest src/client/modules/ -c src/client/jest.config.lwc.js --watch",
         "test:server": "LOG_LEVEL=WARN jest -c src/server/__tests__/jest.config.unit.js",
@@ -97,8 +97,8 @@
         "prettier": "2.0.5",
         "puppeteer": "^5.2.1",
         "ts-jest": "^26.0.3",
-        "ts-node": "^8.0.3",
-        "typescript": "^3.8.3"
+        "ts-node": "^8.10.2",
+        "typescript": "^3.9.10"
     },
     "husky": {
         "hooks": {}
