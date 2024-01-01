@@ -21,7 +21,7 @@
         "test:server:watch": "LOG_LEVEL=WARN jest -c src/server/__tests__/jest.config.unit.js --watch",
         "test:integration": "redis-cli del poolDeploys; LOG_LEVEL=WARN jest -c src/server/__tests__/jest.config.integration.js",
         "test:integration:watch": "redis-cli del poolDeploys; LOG_LEVEL=WARN jest -c test/jest.config.integration.js --watch",
-        "test": "test:generate && jest test/integrationTests -c jest.config.integration.js",
+        "test": "npm run test:generate && jest test/integrationTests -c jest.config.integration.js",
         "watch": "run-p watch:client watch:server",
         "watch:client": "lwc-services watch",
         "watch:server": "redis-server --daemonize yes; nodemon"

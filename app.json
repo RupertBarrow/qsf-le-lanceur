@@ -47,10 +47,10 @@
             "url": "heroku/nodejs"
         },
         {
-            "url": "https://github.com/RupertBarrow/salesforce-cli-buildpack/tree/sync-from-upstream"
+            "url": "https://github.com/heroku/salesforce-cli-buildpack"
         },
         {
-            "url": "https://github.com/heroku/heroku-buildpack-cli#ff0bfe609b4618be16b5e446d623d0eabc1576cb"
+            "url": "https://github.com/heroku/heroku-buildpack-cli"
         }
     ],
     "addons": [
